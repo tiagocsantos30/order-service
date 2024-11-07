@@ -8,9 +8,7 @@ A fim de facilitar a integração com os produtos externos, este projeto disponi
 para cada produto externo. A exchange é responsável por receber as mensagens e distribuí-las para as filas. As filas, por sua vez, são
 responsáveis por armazenar as mensagens até que sejam processadas.
 
-Para simular a ingestão de dados pelo Produto Externo A foi criado a classe StartupOrderGenerator que simula a ingestão de mensagens na fila orderReceivedQueue (simulando ProdutoExterno A),
-após isso são processadas todas as ordens vinculadas aos produtos realizando o somatório dos valores, verificando se existe registros em duplicidade e após isso  armazenando as informações na base MySql e enviando
-para a fila orderProcessedQueue.
+Para simular a ingestão de dados pelo Produto Externo A foi criado a classe StartupOrderGenerator que simula a ingestão de mensagens na fila orderReceivedQueue (simulando ProdutoExterno A). Após isso, são processadas todas as ordens vinculadas aos produtos realizando o somatório dos valores, verificando se existem registros em duplicidade. Em seguida, são armazenadas as informações na base MySql e enviadas para a fila orderProcessedQueue.
 
 Para suportar a alta demanda de mensagens, o projeto utiliza o RabbitMQ como broker de mensagens. O RabbitMQ é um software de mensageria open-source que implementa o protocolo AMQP (Advanced Message Queuing Protocol) e é amplamente utilizado em aplicações distribuídas para garantir a comunicação entre os componentes.
 O Executor de Tarefas é configurado com um pool de threads para processar as mensagens de forma assíncrona. 
