@@ -7,13 +7,19 @@ import br.com.order.model.Order;
 import br.com.order.repository.OrderRepository;
 import br.com.order.service.event.OrderPublisher;
 import br.com.order.validator.OrderValidator;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -75,5 +81,36 @@ class OrderServiceTest {
         doThrow(new IllegalArgumentException("Invalid order")).when(orderValidator).validate(any());
 
         assertThrows(IllegalArgumentException.class, () -> orderService.processOrder(order));
+    }
+
+    @Test
+    void getOrdersByStatus_ordersFound() {
+        Order order = new Order();
+        order.setId(1L);
+        order.setOrderStatus(OrderStatus.PROCESSED);
+        Page<Order> ordersPage = new PageImpl<>(Collections.singletonList(order));
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(orderRepository.findByOrderStatus(OrderStatus.PROCESSED, pageable)).thenReturn(ordersPage);
+
+        Page<Order> result = orderService.getOrdersByStatus(OrderStatus.PROCESSED, 0, 10);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        assertEquals(OrderStatus.PROCESSED, result.getContent().get(0).getOrderStatus());
+    }
+
+    @Test
+    void getOrdersByStatus_noOrdersFound() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Order> emptyPage = new PageImpl<>(Collections.emptyList());
+
+        when(orderRepository.findByOrderStatus(OrderStatus.PROCESSED, pageable)).thenReturn(emptyPage);
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            orderService.getOrdersByStatus(OrderStatus.PROCESSED, 0, 10);
+        });
+
+        assertEquals("No orders found with status: PROCESSED", exception.getMessage());
     }
 }

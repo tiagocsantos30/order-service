@@ -7,8 +7,11 @@ import br.com.order.model.Order;
 import br.com.order.repository.OrderRepository;
 import br.com.order.service.event.OrderPublisher;
 import br.com.order.validator.OrderValidator;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,5 +62,14 @@ public class OrderService {
 
         logger.info("Order processed successfully: {}", savedOrder.getExternalOrderId());
         return savedOrder;
+    }
+
+    public Page<Order> getOrdersByStatus(OrderStatus status, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Order> orders = orderRepository.findByOrderStatus(status, pageRequest);
+        if (orders.isEmpty()) {
+            throw new EntityNotFoundException("No orders found with status: " + status);
+        }
+        return orders;
     }
 }
